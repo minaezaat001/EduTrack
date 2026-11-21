@@ -1,0 +1,128 @@
+@*
+    ================================================================================
+    [دليل الطالب - Assignments/Details.cshtml]
+    - Model: Assignment
+    - Controller: AssignmentsController -> Action: Details(int id) [GET]
+    - استخدم Include و ThenInclude لجلب الكورس والتسليمات وأسماء الطلاب:
+      _context.Assignments
+          .Include(a => a.Course)
+          .Include(a => a.Submissions)
+              .ThenInclude(s => s.Student)
+          .FirstOrDefault(a => a.Id == id);
+    ================================================================================
+*@
+@model Assignment
+@{
+    ViewData["Title"] = "تفاصيل التاسك - " + Model.Title;
+    bool isExpired = DateTime.Now > Model.Deadline;
+}
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 mb-2">
+                    <i class="bi bi-journal-code me-1"></i> @(Model.Course?.Title ?? "الكورس")
+                </span>
+                <h3 class="fw-bold mb-1">@Model.Title</h3>
+            </div>
+            <div class="text-end">
+                <span class="badge @(isExpired ? "bg-danger" : "bg-success") rounded-pill px-3 py-2">
+                    @(isExpired ? "انتهى وقت التسليم" : "مفتوح للتسليم")
+                </span>
+                <div class="small text-muted mt-1">الدرجة النهائية: <strong>@Model.MaxDegree</strong></div>
+            </div>
+        </div>
+
+        <p class="bg-light p-3 rounded-3 text-secondary mb-3" style="white-space: pre-line;">@Model.Description</p>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-2 border-top">
+            <div class="small text-muted">
+                <i class="bi bi-alarm text-danger me-1"></i> آخر موعد للتسليم:
+                <strong class="text-dark">@Model.Deadline.ToString("yyyy/MM/dd - hh:mm tt")</strong>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                @if (!string.IsNullOrEmpty(Model.AttachmentFilePath))
+                {
+                    <a href="~/uploads/assignments/@Model.AttachmentFilePath" target="_blank" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> تحميل ملف شرح التاسك (PDF)
+                    </a>
+                }
+
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="Submissions" asp-action="Submit" asp-route-assignmentId="@Model.Id" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> ارفع حل التاسك الآن
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+{
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-inbox-fill text-primary me-2"></i>تسليمات الطلاب (@(Model.Submissions?.Count ?? 0))</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>اسم الطالب</th>
+                        <th>تاريخ التسليم</th>
+                        <th>ملف الحل</th>
+                        <th>ملاحظات الطالب</th>
+                        <th>الحالة</th>
+                        <th>الدرجة</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Submissions == null || !Model.Submissions.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">لم يقم أي طالب بتسليم هذا التاسك حتى الآن.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var sub in Model.Submissions.OrderByDescending(s => s.SubmittedAt))
+                        {
+                            <tr>
+                                <td class="fw-bold">@(sub.Student?.FullName ?? "طالب")</td>
+                                <td class="small">@sub.SubmittedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                                <td>
+                                    <a href="~/uploads/submissions/@sub.SolutionFilePath" download class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="bi bi-download me-1"></i> تحميل الحل
+                                    </a>
+                                </td>
+                                <td class="small text-muted">@(string.IsNullOrEmpty(sub.StudentNotes) ? "-" : sub.StudentNotes)</td>
+                                <td>
+                                    @if (sub.Status == "Graded")
+                                    {
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">تم التصحيح</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3">قيد المراجعة</span>
+                                    }
+                                </td>
+                                <td class="fw-bold">
+                                    @(sub.Grade.HasValue ? $"{sub.Grade} / {Model.MaxDegree}" : "-")
+                                </td>
+                                <td>
+                                    <a asp-controller="Submissions" asp-action="Grade" asp-route-id="@sub.Id" class="btn btn-sm btn-success rounded-pill px-3">
+                                        <i class="bi bi-check2-square me-1"></i> رصد الدرجة
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

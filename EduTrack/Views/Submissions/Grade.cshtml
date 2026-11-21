@@ -1,0 +1,72 @@
+@*
+    ================================================================================
+    [دليل الطالب - Submissions/Grade.cshtml]
+    - Model: GradeSubmissionViewModel
+    - Controller: SubmissionsController -> [Authorize(Roles = "Instructor,Admin")]
+    - Action: Grade(int id) [GET] & Grade(GradeSubmissionViewModel model) [POST]
+    - في الـ POST:
+      1) ابحث عن الـ Submission في الداتابيز بواسطة model.SubmissionId.
+      2) حدث الحقول: Grade = model.Grade، و InstructorFeedback = model.InstructorFeedback، و Status = "Graded".
+      3) احفظ التعديلات بـ _context.SaveChanges() وارجع لصفحة تفاصيل التاسك Assignments/Details.
+    ================================================================================
+*@
+@model GradeSubmissionViewModel
+@{
+    ViewData["Title"] = "تقييم الحل ورصد الدرجة";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-1 mb-2">لوحة التصحيح</span>
+                <h4 class="fw-bold mb-0"><i class="bi bi-check2-square text-success me-2"></i>تقييم تسليم الطالب</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="bg-light rounded-3 p-3 mb-4 small">
+                    <div class="mb-1"><span class="text-muted">اسم الطالب:</span> <strong class="text-dark">@Model.StudentName</strong></div>
+                    <div class="mb-1"><span class="text-muted">التاسك:</span> <strong class="text-dark">@Model.AssignmentTitle</strong></div>
+                    <div class="mb-2"><span class="text-muted">تاريخ التسليم:</span> <strong>@Model.SubmittedAt.ToString("yyyy/MM/dd hh:mm tt")</strong></div>
+                    @if (!string.IsNullOrEmpty(Model.StudentNotes))
+                    {
+                        <div class="mb-2"><span class="text-muted">ملاحظات الطالب:</span> <em>@Model.StudentNotes</em></div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SolutionFilePath))
+                    {
+                        <a href="~/uploads/submissions/@Model.SolutionFilePath" download class="btn btn-sm btn-outline-primary rounded-pill mt-1">
+                            <i class="bi bi-download me-1"></i> تحميل ملف حل الطالب للمراجعة
+                        </a>
+                    }
+                </div>
+
+                <form asp-action="Grade" method="post">
+                    <input type="hidden" asp-for="SubmissionId" />
+                    <input type="hidden" asp-for="AssignmentId" />
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Grade" class="form-label fw-semibold">الدرجة (من @Model.MaxDegree)</label>
+                        <input asp-for="Grade" type="number" class="form-control" min="0" max="@Model.MaxDegree" />
+                        <span asp-validation-for="Grade" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="InstructorFeedback" class="form-label fw-semibold"></label>
+                        <textarea asp-for="InstructorFeedback" class="form-control" rows="3" placeholder="اكتب ملاحظاتك للطالب على الكود وطريقة الحل..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-controller="Assignments" asp-action="Details" asp-route-id="@Model.AssignmentId" class="btn btn-light rounded-pill px-4">إلغاء</a>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                            <i class="bi bi-check-circle me-1"></i> اعتماد الدرجة والتقييم
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,117 @@
+@*
+    ================================================================================
+    [دليل الطالب - Courses/Details.cshtml]
+    - Model: Course
+    - Controller: CoursesController -> Action: Details(int id) [GET]
+    - استخدم Include لجلب كل العلاقات:
+      _context.Courses
+          .Include(c => c.Instructor)
+          .Include(c => c.Students)
+          .Include(c => c.Assignments)
+              .ThenInclude(a => a.Submissions)
+          .FirstOrDefault(c => c.Id == id);
+    ================================================================================
+*@
+@model Course
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<!-- هيدر الكورس -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+    <div class="row g-0 align-items-center">
+        <div class="col-md-4">
+            @if (!string.IsNullOrEmpty(Model.ThumbnailPath))
+            {
+                <img src="~/images/courses/@Model.ThumbnailPath" alt="@Model.Title" class="img-fluid w-100 object-fit-cover" style="height: 240px;" />
+            }
+            else
+            {
+                <div class="bg-dark text-white d-flex align-items-center justify-content-center" style="height: 240px;">
+                    <i class="bi bi-journal-code display-1 text-info"></i>
+                </div>
+            }
+        </div>
+        <div class="col-md-8">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-primary rounded-pill px-3 py-2">
+                        <i class="bi bi-clock me-1"></i> @Model.TotalHours ساعة تدريبية
+                    </span>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                        <i class="bi bi-people me-1"></i> @(Model.Students?.Count ?? 0) طالب مسجل
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-2">@Model.Title</h2>
+                <p class="text-muted mb-3">@Model.Description</p>
+                <div class="d-flex flex-wrap justify-content-between align-items-center border-top pt-3">
+                    <div>
+                        <span class="text-muted small">المحاضر المسؤول:</span>
+                        <strong class="ms-1 text-primary"><i class="bi bi-person-video3 me-1"></i> @(Model.Instructor?.FullName ?? "غير محدد")</strong>
+                    </div>
+
+                    @if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Assignments" asp-action="Create" asp-route-courseId="@Model.Id" class="btn btn-success rounded-pill px-4">
+                            <i class="bi bi-file-earmark-plus me-1"></i> إضافة تاسك جديد للكورس
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قائمة التاسكات الخاصة بالكورس -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>التاسكات والواجبات العملية (@(Model.Assignments?.Count ?? 0))</h4>
+</div>
+
+@if (Model.Assignments == null || !Model.Assignments.Any())
+{
+    <div class="alert alert-light border rounded-4 p-4 text-center text-muted">
+        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+        لم يتم رفع أي تاسكات في هذا الكورس حتى الآن.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var task in Model.Assignments.OrderByDescending(a => a.Deadline))
+        {
+            bool isExpired = DateTime.Now > task.Deadline;
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h5 class="fw-bold mb-0">@task.Title</h5>
+                                <span class="badge @(isExpired ? "bg-danger-subtle text-danger" : "bg-success-subtle text-success") rounded-pill">
+                                    @(isExpired ? "انتهى موعد التسليم" : "مفتوح للتسليم")
+                                </span>
+                                <span class="badge bg-light text-dark border rounded-pill">الدرجة: @task.MaxDegree</span>
+                            </div>
+                            <p class="text-muted small mb-2">@task.Description</p>
+                            <div class="small text-secondary d-flex flex-wrap gap-3">
+                                <span><i class="bi bi-calendar-event text-danger me-1"></i> آخر موعد: <strong>@task.Deadline.ToString("yyyy/MM/dd - hh:mm tt")</strong></span>
+                                <span><i class="bi bi-file-earmark-check text-primary me-1"></i> عدد التسليمات: <strong>@(task.Submissions?.Count ?? 0)</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (!string.IsNullOrEmpty(task.AttachmentFilePath))
+                            {
+                                <a href="~/uploads/assignments/@task.AttachmentFilePath" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i> تحميل ملف الشرح (PDF)
+                                </a>
+                            }
+                            <a asp-controller="Assignments" asp-action="Details" asp-route-id="@task.Id" class="btn btn-primary btn-sm rounded-pill px-4">
+                                <i class="bi bi-arrow-left-circle me-1"></i> فتح تفاصيل التاسك
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

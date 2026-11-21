@@ -1,0 +1,71 @@
+@*
+    ================================================================================
+    [دليل الطالب - Account/Login.cshtml]
+    - Model: LoginViewModel
+    - Controller: AccountController
+    - Actions المطلوبة:
+      1) Login() [GET] -> يعرض هذه الصفحة
+      2) Login(LoginViewModel model) [POST] -> يستخدم SignInManager.PasswordSignInAsync
+    ================================================================================
+*@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold">تسجيل الدخول</h3>
+                    <p class="text-muted small">أدخل بيانات حسابك للوصول إلى منصة EduTrack</p>
+                </div>
+
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="example@edutrack.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label small"></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-bold">
+                        <i class="bi bi-box-arrow-in-left me-1"></i> دخول للمنصة
+                    </button>
+                </form>
+
+                <hr class="my-4" />
+                <div class="text-center small">
+                    طالب جديد ولا تملك حساباً؟
+                    <a asp-controller="Account" asp-action="Register" class="fw-bold text-decoration-none">إنشاء حساب طالب</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

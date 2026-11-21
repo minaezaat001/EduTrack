@@ -1,0 +1,76 @@
+@*
+    ================================================================================
+    [دليل الطالب - Assignments/Create.cshtml]
+    - Model: CreateAssignmentViewModel
+    - Controller: AssignmentsController -> [Authorize(Roles = "Instructor,Admin")]
+    - Action: Create(int courseId) [GET] & Create(CreateAssignmentViewModel model) [POST]
+    - خطوات الـ POST:
+      1) تحقق من أن ملف AttachmentFile (إذا تم رفعه) امتداده .pdf باستخدام Path.GetExtension.
+      2) احفظ الملف داخل wwwroot/uploads/assignments باسم فريد (Guid).
+      3) أنشئ كائن Assignment واحفظه في الداتابيز ثم اعمل RedirectToAction("Details", "Courses", new { id = model.CourseId }).
+    ================================================================================
+*@
+@model CreateAssignmentViewModel
+@{
+    ViewData["Title"] = "إضافة تاسك جديد";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 mb-2">لوحة المحاضر</span>
+                <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-plus text-primary me-2"></i>إضافة تاسك جديد @(Model.CourseTitle != null ? $"في {Model.CourseTitle}" : "")</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="CourseId" />
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-semibold"></label>
+                        <input asp-for="Title" class="form-control" placeholder="مثال: Task 1 - بناء CRUD كامل بالـ EF Core" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="اكتب خطوات التاسك والمطلوب تسليمه بالتفصيل..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Deadline" class="form-label fw-semibold"></label>
+                            <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="Deadline" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="MaxDegree" class="form-label fw-semibold"></label>
+                            <input asp-for="MaxDegree" type="number" class="form-control" />
+                            <span asp-validation-for="MaxDegree" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="AttachmentFile" class="form-label fw-semibold"></label>
+                        <input asp-for="AttachmentFile" type="file" class="form-control" accept=".pdf" />
+                        <div class="form-text">يرجى رفع ملف PDF يحتوي على شرح التاسك (يحفظ في wwwroot/uploads/assignments)</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="@Model.CourseId" class="btn btn-light rounded-pill px-4">إلغاء</a>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> نشر التاسك للطلاب
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

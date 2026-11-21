@@ -1,0 +1,107 @@
+@*
+    ================================================================================
+    [دليل الطالب - Submissions/MySubmissions.cshtml]
+    - Model: IEnumerable<Submission>
+    - Controller: SubmissionsController -> [Authorize(Roles = "Student")]
+    - Action: MySubmissions() [GET]
+    - خطوات الـ Action:
+      1) احصل على UserId للطالب الحالي وابحث عن StudentId المقابل له.
+      2) اجلب تسليمات الطالب مع بيانات التاسك والكورس:
+         _context.Submissions
+             .Include(s => s.Assignment)
+                 .ThenInclude(a => a.Course)
+             .Where(s => s.StudentId == student.Id)
+             .OrderByDescending(s => s.SubmittedAt)
+             .ToList();
+    ================================================================================
+*@
+@model IEnumerable<Submission>
+@{
+    ViewData["Title"] = "تسليماتي ودرجاتي";
+}
+
+<div class="mb-4">
+    <h3 class="fw-bold mb-1"><i class="bi bi-cloud-check-fill text-primary me-2"></i>تسليماتي ودرجاتي</h3>
+    <p class="text-muted small mb-0">تابع حالة التاسكات التي قمت برفعها والتقييم الخاص بكل تاسك</p>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>الكورس</th>
+                    <th>التاسك</th>
+                    <th>تاريخ التسليم</th>
+                    <th>ملف الحل المرفوع</th>
+                    <th>حالة التصحيح</th>
+                    <th>الدرجة</th>
+                    <th>تعليق المحاضر (Feedback)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            لم تقم برفع أي حلول حتى الآن. اذهب إلى صفحة الكورسات لاستعراض التاسكات المطلوبة.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var sub in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold text-primary">@(sub.Assignment?.Course?.Title ?? "-")</td>
+                            <td class="fw-bold">@(sub.Assignment?.Title ?? "-")</td>
+                            <td class="small">@sub.SubmittedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                            <td>
+                                <a href="~/uploads/submissions/@sub.SolutionFilePath" download class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                    <i class="bi bi-file-earmark-zip me-1"></i> تحميلي
+                                </a>
+                            </td>
+                            <td>
+                                @if (sub.Status == "Graded")
+                                {
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">
+                                        <i class="bi bi-check-circle me-1"></i> تم التصحيح
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i> قيد المراجعة
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (sub.Grade.HasValue)
+                                {
+                                    <span class="fw-bold text-success fs-6">@sub.Grade / @(sub.Assignment?.MaxDegree ?? 100)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="small">
+                                @if (!string.IsNullOrEmpty(sub.InstructorFeedback))
+                                {
+                                    <div class="bg-light rounded-3 p-2 border-start border-3 border-primary">
+                                        @sub.InstructorFeedback
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">لا يوجد تعليق بعد</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

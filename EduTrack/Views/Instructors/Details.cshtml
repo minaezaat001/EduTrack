@@ -1,0 +1,73 @@
+@*
+    ================================================================================
+    [دليل الطالب - Instructors/Details.cshtml]
+    - Model: Instructor
+    - Action: Details(int id) [GET]
+    - استخدم:
+      _context.Instructors
+          .Include(i => i.User)
+          .Include(i => i.Courses)
+          .FirstOrDefault(i => i.Id == id);
+    ================================================================================
+*@
+@model Instructor
+@{
+    ViewData["Title"] = "ملف المحاضر - " + Model.FullName;
+}
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center gap-4">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="~/images/instructors/@Model.ImagePath" alt="@Model.FullName"
+                 class="rounded-circle object-fit-cover border border-3 border-primary"
+                 style="width: 110px; height: 110px;" />
+        }
+        else
+        {
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center"
+                 style="width: 110px; height: 110px;">
+                <i class="bi bi-person-video3 display-4"></i>
+            </div>
+        }
+        <div class="text-center text-md-start flex-grow-1">
+            <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-1 mb-2">@Model.Specialization</span>
+            <h3 class="fw-bold mb-1">@Model.FullName</h3>
+            <p class="text-muted mb-2">@Model.Bio</p>
+            <div class="small text-secondary">
+                <i class="bi bi-envelope me-1"></i> البريد المسجل: <strong>@(Model.User?.Email ?? "غير متوفر")</strong>
+            </div>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-right me-1"></i> عودة للقائمة
+        </a>
+    </div>
+</div>
+
+<h5 class="fw-bold mb-3"><i class="bi bi-journal-code text-primary me-2"></i>الكورسات المسندة للمحاضر (@Model.Courses.Count)</h5>
+
+@if (!Model.Courses.Any())
+{
+    <div class="alert alert-light border rounded-4 text-center p-4">لا توجد كورسات مسندة لهذا المحاضر حتى الآن.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-1">@course.Title</h6>
+                            <span class="text-muted small"><i class="bi bi-clock me-1"></i> @course.TotalHours ساعة تدريبية</span>
+                        </div>
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id" class="btn btn-sm btn-primary rounded-pill px-3">
+                            فتح الكورس
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,129 @@
+@*
+    ================================================================================
+    [دليل الطالب - Home/Index.cshtml]
+    - Controller: HomeController -> Action: Index() [GET]
+    - يمكنك إرسال إحصائيات سريعة في الـ ViewBag:
+      ViewBag.CoursesCount = _context.Courses.Count();
+      ViewBag.InstructorsCount = _context.Instructors.Count();
+      ViewBag.StudentsCount = _context.Students.Count();
+      ViewBag.SubmissionsCount = _context.Submissions.Count();
+    ================================================================================
+*@
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<div class="p-5 mb-4 bg-dark text-white rounded-4 shadow position-relative overflow-hidden">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">منصة التدريب العملي - Core Academy</span>
+            <h1 class="display-5 fw-bold mb-3">منصة EduTrack لإدارة الكورسات وتسليم التاسكات</h1>
+            <p class="lead text-light opacity-75 mb-4">
+                نظام متكامل يربط إدارة الأكاديمية والمحاضرين والطلاب في مكان واحد: تصفح الكورسات، حمّل ملفات التاسكات بصيغة PDF، ارفع حلولك، وتابع درجاتك وملاحظات المحاضر خطوة بخطوة.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Courses" asp-action="Index" class="btn btn-primary btn-lg px-4 rounded-pill">
+                        <i class="bi bi-journal-code me-1"></i> استعراض الكورسات
+                    </a>
+                    @if (User.IsInRole("Student"))
+                    {
+                        <a asp-controller="Submissions" asp-action="MySubmissions" class="btn btn-outline-warning btn-lg px-4 rounded-pill">
+                            <i class="bi bi-award me-1"></i> متابعة درجاتي
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-4 rounded-pill">
+                        <i class="bi bi-person-plus-fill me-1"></i> سجل كطالب الآن
+                    </a>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+                        <i class="bi bi-box-arrow-in-left me-1"></i> تسجيل الدخول
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+            <i class="bi bi-laptop text-info" style="font-size: 8rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- إحصائيات المنصة -->
+<div class="row g-4 mb-5 text-center">
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 py-3">
+            <div class="card-body">
+                <div class="text-primary fs-1 mb-2"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <h3 class="fw-bold mb-0">@(ViewBag.CoursesCount ?? 0)</h3>
+                <p class="text-muted small mb-0">كورس تدريبي</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 py-3">
+            <div class="card-body">
+                <div class="text-info fs-1 mb-2"><i class="bi bi-person-video3"></i></div>
+                <h3 class="fw-bold mb-0">@(ViewBag.InstructorsCount ?? 0)</h3>
+                <p class="text-muted small mb-0">محاضر متخصص</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 py-3">
+            <div class="card-body">
+                <div class="text-success fs-1 mb-2"><i class="bi bi-people-fill"></i></div>
+                <h3 class="fw-bold mb-0">@(ViewBag.StudentsCount ?? 0)</h3>
+                <p class="text-muted small mb-0">طالب مسجل</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 py-3">
+            <div class="card-body">
+                <div class="text-warning fs-1 mb-2"><i class="bi bi-file-earmark-check-fill"></i></div>
+                <h3 class="fw-bold mb-0">@(ViewBag.SubmissionsCount ?? 0)</h3>
+                <p class="text-muted small mb-0">تاسك تم تسليمه</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- كروت شرح الأدوار في النظام -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill mb-3">صلاحية Admin</span>
+                <h5 class="fw-bold">إدارة الأكاديمية</h5>
+                <p class="text-muted small mb-0">
+                    إضافة المحاضرين برفع صورهم الشخصية وإنشاء حسابات الدخول لهم تلقائياً، وإنشاء الكورسات وتعيين المحاضر المسؤول عن كل كورس.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <span class="badge bg-info-subtle text-info-emphasis px-3 py-2 rounded-pill mb-3">صلاحية Instructor</span>
+                <h5 class="fw-bold">لوحة المحاضر</h5>
+                <p class="text-muted small mb-0">
+                    استعراض الكورسات المسندة إليه، رفع التاسكات بصيغة PDF مع تحديد الـ Deadline، وتحميل حلول الطلاب لرصد الدرجة والـ Feedback.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill mb-3">صلاحية Student</span>
+                <h5 class="fw-bold">بوابة الطالب</h5>
+                <p class="text-muted small mb-0">
+                    التسجيل في الكورس، تحميل ملفات شرح التاسكات، رفع ملف الحل (ZIP أو PDF) قبل انتهاء الموعد، ومتابعة الدرجات والتقييم.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+@*
+    ================================================================================
+    [دليل الطالب - Account/Register.cshtml]
+    - Model: RegisterStudentViewModel
+    - Controller: AccountController
+    - ملاحظة مهمة جداً في الـ GET والـ POST (في حالة الخطأ):
+      يجب إرسال قائمة الكورسات في ViewBag.Courses لبناء الـ SelectList:
+      ViewBag.Courses = new SelectList(_context.Courses.ToList(), "Id", "Title");
+    - في الـ POST:
+      1) أنشئ ApplicationUser واحفظه بـ UserManager.CreateAsync(user, model.Password)
+      2) أضف له رول "Student" بـ UserManager.AddToRoleAsync(user, "Student")
+      3) أنشئ كائن Student واربطه بـ UserId = user.Id و CourseId = model.CourseId واحفظه في _context.Students
+    ================================================================================
+*@
+@model RegisterStudentViewModel
+@{
+    ViewData["Title"] = "تسجيل طالب جديد";
+}
+
+<div class="row justify-content-center my-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill mb-2">حساب طالب جديد</span>
+                    <h3 class="fw-bold">التسجيل في الكورسات التدريبية</h3>
+                    <p class="text-muted small">املأ بياناتك واختر الكورس الذي ترغب في الانضمام إليه</p>
+                </div>
+
+                <form asp-controller="Account" asp-action="Register" method="post">
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-semibold"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="الاسم ثلاثي أو رباعي" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="student@example.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="010xxxxxxxx" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="University" class="form-label fw-semibold"></label>
+                            <input asp-for="University" class="form-control" placeholder="مثال: حاسبات ومعلومات" />
+                            <span asp-validation-for="University" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="CourseId" class="form-label fw-semibold"></label>
+                            <select asp-for="CourseId" asp-items="ViewBag.Courses" class="form-select">
+                                <option value="">-- اختر الكورس التدريبي --</option>
+                            </select>
+                            <span asp-validation-for="CourseId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-semibold"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-2 rounded-3 fw-bold mt-4">
+                        <i class="bi bi-check2-circle me-1"></i> إنشاء الحساب والانضمام للكورس
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
